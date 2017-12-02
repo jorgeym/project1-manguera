@@ -6,6 +6,7 @@ var ctx = canvas.getContext('2d');
 var gravity = 0.004;
 var intervalHandle = null;
 var vidas = 3;
+var nivel = 0;
 
 // object water
 function Water() {
@@ -57,11 +58,11 @@ Gun.prototype.draw = function() {
 };
 
 // object plant
-function Plant() {
-  this.x = 470;
-  this.y = 300;
-  this.h = 30;
-  this.color = '#00FF00';
+function Plant(x, y, h, color) {
+  this.x = x;
+  this.y = y;
+  this.h = h;
+  this.color = color;
 }
 
 Plant.prototype.draw = function() {
@@ -76,6 +77,7 @@ function Circle() {
   this.x = 0;
   this.y = 500;
   this.radius = 110;
+  this.radiusIn = 100;
   this.color = '#808080';
 }
 
@@ -83,7 +85,7 @@ Circle.prototype.draw = function() {
   ctx.strokeRect(0,0,canvas.width,canvas.height);
   ctx.beginPath();
   ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-  ctx.arc(this.x, this.y, this.radius-10, 0, Math.PI * 2, true);
+  ctx.arc(this.x, this.y, this.radiusIn, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.fillStyle = this.color;
   ctx.fill();
@@ -93,11 +95,13 @@ Circle.prototype.draw = function() {
 
 var water = new Water();
 var gun = new Gun();
-var plant = new Plant();
+var plant = new Plant(470, 300, 30, '#00FF00');
+var plant1 = new Plant(400, 200, 30, '#00FF00');
 var circle = new Circle();
 var clickInsideCircle = 0;
 $("#vidas").text(vidas);
 
+// pintar nivel 0
 
 function drawAll() {
   water.draw();
@@ -109,6 +113,16 @@ function drawAll() {
 
 drawAll();
 
+// pintar nivel 1
+
+function drawLevel1() {
+  water.draw();
+  gun.draw();
+  plant1.draw();
+  circle.draw();
+  $("#clean").hide();
+}
+
 // volver a empezar
 
 function restart() {
@@ -118,6 +132,7 @@ function restart() {
   water.vy = 2;
   vidas = 3; // alguna forma de hacer restart sin volver a meter el número?
   $("#vidas").text(vidas);
+  var gravity = 0.004;
   ctx.clearRect(0,0, canvas.width, canvas.height);
   drawAll();
 }
@@ -133,10 +148,19 @@ function shootAgain() {
   drawAll();
 }
 
+function shootAgainLevel1() {
+  water.x = 50;
+  water.y = 450;
+  water.vx = 2;
+  water.vy = 2;
+  ctx.clearRect(0,0, canvas.width, canvas.height);
+  drawLevel1();
+}
+
 //check si click para disparo está dentro del círculo
 
-function checkClick(circleX, circleY, radius, mouseX, mouseY) {
-  if (Math.sqrt((mouseX-circleX)*(mouseX-circleX) + (mouseY-circleY)*(mouseY-circleY)) < radius) {
+function checkClick(circleX, circleY, radius, radiusIn, mouseX, mouseY) {
+  if (Math.sqrt((mouseX-circleX)*(mouseX-circleX) + (mouseY-circleY)*(mouseY-circleY)) < radius && Math.sqrt((mouseX-circleX)*(mouseX-circleX) + (mouseY-circleY)*(mouseY-circleY)) > radiusIn){
     clickInsideCircle = true;
   } else {
     clickInsideCircle = false;
@@ -165,16 +189,17 @@ function getMousePos(canvas, evt) {
   canvas.addEventListener('click', function(evt) {
     clearInterval(intervalHandle);
     var mousePos = getMousePos(canvas, evt);
-    checkClick(circle.x, circle.y, circle.radius, mousePos.x, mousePos.y);
+    checkClick(circle.x, circle.y, circle.radius, circle.radiusIn, mousePos.x, mousePos.y);
     if (clickInsideCircle == true) {
       water.vx = (mousePos.x - water.x) * 0.05;
       water.vy = (water.y - mousePos.y) * 0.05;
+        
       intervalHandle = setInterval(function() {
         water.update();
         hitPlant(water.x, water.y, water.radius, plant.x, plant.y, plant.h);
       }, 2);
     } else {
-      alert("Debes hacer click dentro del círculo");
+      alert("Debes hacer click dentro del arco gris");
     }
   }, false);
 
@@ -182,7 +207,8 @@ function getMousePos(canvas, evt) {
   function hitPlant (waterX, waterY, waterR, plantX, plantY, plantH){
     if (Math.floor(waterX) >= Math.floor(plantX) && Math.floor(waterX) <= Math.floor(plantX + plantH) && Math.floor(waterY) >= Math.floor(plantY) && Math.floor(waterY) <= Math.floor(plantY + plantH)){
       alert("hit!");
-      shootAgain();
+      nivel += 1;
+      shootAgainLevel1();
       clearInterval(intervalHandle);
 
     } else if ((waterX >= canvas.width) || (waterY >= canvas.height) || (waterX<=0) || (waterY <= 0)) {
