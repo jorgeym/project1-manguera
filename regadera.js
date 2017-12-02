@@ -75,7 +75,7 @@ Plant.prototype.draw = function() {
 function Circle() {
   this.x = 0;
   this.y = 500;
-  this.radius = 106;
+  this.radius = 110;
   this.color = '#808080';
 }
 
@@ -83,7 +83,7 @@ Circle.prototype.draw = function() {
   ctx.strokeRect(0,0,canvas.width,canvas.height);
   ctx.beginPath();
   ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-  ctx.arc(this.x, this.y, this.radius-6, 0, Math.PI * 2, true);
+  ctx.arc(this.x, this.y, this.radius-10, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.fillStyle = this.color;
   ctx.fill();
@@ -95,6 +95,7 @@ var water = new Water();
 var gun = new Gun();
 var plant = new Plant();
 var circle = new Circle();
+var clickInsideCircle = 0;
 $("#vidas").text(vidas);
 
 
@@ -135,7 +136,6 @@ function shootAgain() {
 //check si click para disparo está dentro del círculo
 
 function checkClick(circleX, circleY, radius, mouseX, mouseY) {
-  var clickInsideCircle;
   if (Math.sqrt((mouseX-circleX)*(mouseX-circleX) + (mouseY-circleY)*(mouseY-circleY)) < radius) {
     clickInsideCircle = true;
   } else {
@@ -143,6 +143,7 @@ function checkClick(circleX, circleY, radius, mouseX, mouseY) {
   }
   return clickInsideCircle;
 }
+
 
 // restart button
 
@@ -164,13 +165,17 @@ function getMousePos(canvas, evt) {
   canvas.addEventListener('click', function(evt) {
     clearInterval(intervalHandle);
     var mousePos = getMousePos(canvas, evt);
-
-    water.vx = (mousePos.x - water.x) * 0.05;
-    water.vy = (water.y - mousePos.y) * 0.05;
-    intervalHandle = setInterval(function() {
-      water.update();
-      hitPlant(water.x, water.y, water.radius, plant.x, plant.y, plant.h);
-    }, 2);
+    checkClick(circle.x, circle.y, circle.radius, mousePos.x, mousePos.y);
+    if (clickInsideCircle == true) {
+      water.vx = (mousePos.x - water.x) * 0.05;
+      water.vy = (water.y - mousePos.y) * 0.05;
+      intervalHandle = setInterval(function() {
+        water.update();
+        hitPlant(water.x, water.y, water.radius, plant.x, plant.y, plant.h);
+      }, 2);
+    } else {
+      alert("Debes hacer click dentro del círculo");
+    }
   }, false);
 
   // comprobar si hit al objeto
