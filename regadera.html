@@ -9,20 +9,19 @@
     <body>
       <div>
         <h1>Regadera Gun</h1>
-        <button id="shoot">Regar</button>
         <button id="clean">Empezar de nuevo</button>
       </div>
 
-      <canvas id="canvas" width="500px" height="500px">      </canvas>
+      <canvas class="game-over" id="canvas" width="500px" height="500px">      </canvas>
 
-      <div >
+      <div class="game-over">
         <h2>Score</h2>
         <p>Plants watered: <span >0</span></p>
         <h2>Lives</h2>
-        <p>You have <span >0</span> lives left</p>
+        <p>You have <span id="vidas">0</span> lives left</p>
       </div>
 
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="jquery-2.1.4.js"></script>
         <script type="text/javascript" src="regadera.js"></script>
 
     </body>

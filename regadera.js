@@ -1,16 +1,18 @@
+$(function(){
 
 // declare global vars
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-var gravity = 0.02;
+var gravity = 0.004;
 var intervalHandle = null;
+var vidas = 3;
 
 // object water
 function Water() {
   this.x = 50;
   this.y = 450;
   this.vx = 2;
-  this.vy = 3;
+  this.vy = 2;
   this.radius = 3;
   this.color = '#000080';
 }
@@ -25,11 +27,12 @@ Water.prototype.draw = function() {
 };
 
 Water.prototype.update = function() {
-  this.draw();
+
   // movimiento agua
   this.x += this.vx;
   this.vy -= gravity;
   this.y -= this.vy;
+  this.draw();
 };
 
 // object water gun
@@ -57,17 +60,13 @@ Gun.prototype.draw = function() {
 function Plant() {
   this.x = 470;
   this.y = 300;
+  this.h = 30;
   this.color = '#00FF00';
 }
 
 Plant.prototype.draw = function() {
   ctx.strokeRect(0,0,canvas.width,canvas.height);
-  ctx.beginPath();
-  ctx.moveTo(this.x, this.y);
-  ctx.lineTo(this.x+30,this.y);
-  ctx.lineTo(this.x+30, this.y-30);
-  ctx.lineTo(this.x, this.y-30);
-  ctx.closePath();
+  ctx.rect(this.x, this.y, this.h, this.h);
   ctx.fillStyle = this.color;
   ctx.fill();
 };
@@ -76,48 +75,80 @@ Plant.prototype.draw = function() {
 function Circle() {
   this.x = 0;
   this.y = 500;
-  this.radius = 150;
+  this.radius = 106;
   this.color = '#808080';
 }
 
 Circle.prototype.draw = function() {
   ctx.strokeRect(0,0,canvas.width,canvas.height);
   ctx.beginPath();
-  ctx.arc(this.x, this.y, this.radius+10, 0, Math.PI * 2, false);
-  ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+  ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+  ctx.arc(this.x, this.y, this.radius-6, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.fillStyle = this.color;
   ctx.fill();
 };
 
-//lógica juego
+// pintar todo
 
 var water = new Water();
 var gun = new Gun();
 var plant = new Plant();
 var circle = new Circle();
-water.draw();
-gun.draw();
-plant.draw();
-circle.draw();
+$("#vidas").text(vidas);
 
-document.getElementById("shoot").onclick = function(){
-  intervalHandle = setInterval(function() {
-    water.update(); // por que si hago dos clicks al regar, no deja de regar al empezar de nuevo?
-  }, 2);
-};
 
-document.getElementById("clean").onclick = function(){
-  clearInterval(intervalHandle);
-  water.x = 50; // parece un poco cutre con los números introducidos tal cual
-  water.y = 450;
-  water.vx = 2;
-  water.vy = 3;
-  ctx.clearRect(0,0, canvas.width, canvas.height);
+function drawAll() {
   water.draw();
   gun.draw();
   plant.draw();
   circle.draw();
+  $("#clean").hide();
+}
+
+drawAll();
+
+// volver a empezar
+
+function restart() {
+  water.x = 50; // parece un poco cutre con los números introducidos tal cual
+  water.y = 450;
+  water.vx = 2;
+  water.vy = 2;
+  vidas = 3; // alguna forma de hacer restart sin volver a meter el número?
+  $("#vidas").text(vidas);
+  ctx.clearRect(0,0, canvas.width, canvas.height);
+  drawAll();
+}
+
+// disparar de nuevo
+
+function shootAgain() {
+  water.x = 50;
+  water.y = 450;
+  water.vx = 2;
+  water.vy = 2;
+  ctx.clearRect(0,0, canvas.width, canvas.height);
+  drawAll();
+}
+
+//check si click para disparo está dentro del círculo
+
+function checkClick(circleX, circleY, radius, mouseX, mouseY) {
+  var clickInsideCircle;
+  if (Math.sqrt((mouseX-circleX)*(mouseX-circleX) + (mouseY-circleY)*(mouseY-circleY)) < radius) {
+    clickInsideCircle = true;
+  } else {
+    clickInsideCircle = false;
+  }
+  return clickInsideCircle;
+}
+
+// restart button
+
+document.getElementById("clean").onclick = function(){
+  $(".game-over").show();
+  restart();
 };
 
 // click en círculo para apuntar
@@ -131,6 +162,38 @@ function getMousePos(canvas, evt) {
   }
 
   canvas.addEventListener('click', function(evt) {
+    clearInterval(intervalHandle);
     var mousePos = getMousePos(canvas, evt);
-    console.log('Mouse position: ' + mousePos.x + ',' + mousePos.y);
+
+    water.vx = (mousePos.x - water.x) * 0.05;
+    water.vy = (water.y - mousePos.y) * 0.05;
+    intervalHandle = setInterval(function() {
+      water.update();
+      hitPlant(water.x, water.y, water.radius, plant.x, plant.y, plant.h);
+    }, 2);
   }, false);
+
+  // comprobar si hit al objeto
+  function hitPlant (waterX, waterY, waterR, plantX, plantY, plantH){
+    if (Math.floor(waterX) >= Math.floor(plantX) && Math.floor(waterX) <= Math.floor(plantX + plantH) && Math.floor(waterY) >= Math.floor(plantY) && Math.floor(waterY) <= Math.floor(plantY + plantH)){
+      alert("hit!");
+      shootAgain();
+      clearInterval(intervalHandle);
+
+    } else if ((waterX >= canvas.width) || (waterY >= canvas.height) || (waterX<=0) || (waterY <= 0)) {
+      vidas -= 1;
+      clearInterval(intervalHandle);
+        if (vidas > 0) {
+          alert("¡Te has salido! Te quedan " + vidas + " vidas");
+          shootAgain();
+          $("#vidas").text(vidas);
+        } else {
+          alert("Game Over");
+          $(".game-over").hide();
+          $("#clean").show();
+          $("#vidas").text("0");
+        }
+    }
+  }
+
+});
