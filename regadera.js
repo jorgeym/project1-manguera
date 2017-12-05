@@ -1,11 +1,11 @@
 $(function(){
 
-// declare global vars
+//declare global vars
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 var gravity = 0.004;
 var intervalHandle = null;
-var vidas = 3;
+var vidas = 4;
 var nivel = 0;
 
 // object water
@@ -38,23 +38,15 @@ Water.prototype.update = function() {
 
 // object water gun
 function Gun() {
-  this.x = 15;
-  this.y = 470;
-  this.color = '#00FF00';
+
 }
 
 Gun.prototype.draw = function() {
-  ctx.strokeRect(0,0,canvas.width,canvas.height);
-  ctx.beginPath();
-  ctx.moveTo(this.x, this.y);
-  ctx.lineTo(this.x+10,this.y-2);
-  ctx.lineTo(this.x+8, this.y-12);
-  ctx.lineTo(this.x+30, this.y-14);
-  ctx.lineTo(this.x+28, this.y-22);
-  ctx.lineTo(this.x-2, this.y-20);
-  ctx.closePath();
-  ctx.fillStyle = this.color;
-  ctx.fill();
+    img_hose = new Image();
+    img_hose.src = 'images/fire-department-icon-16.png';
+    img_hose.onload = function() {
+      ctx.drawImage(img_hose, -2, 417, 80, 80);
+    };
 };
 
 // object plant
@@ -66,6 +58,11 @@ function Plant(x, y, h, color) {
 }
 
 Plant.prototype.draw = function() {
+    img_cactus = new Image();
+    img_cactus.src = 'images/cactus.png';
+    img_cactus.onload = function() {
+      ctx.drawImage(img_cactus, 300, 300, 50, 50); // como hago para que coja las coordenadas del objeto?
+      };
   ctx.strokeRect(0,0,canvas.width,canvas.height);
   ctx.rect(this.x, this.y, this.h, this.h);
   ctx.fillStyle = this.color;
@@ -78,7 +75,7 @@ function Circle() {
   this.y = 500;
   this.radius = 110;
   this.radiusIn = 100;
-  this.color = '#808080';
+  this.color = '#bdbdbd';
 }
 
 Circle.prototype.draw = function() {
@@ -94,67 +91,74 @@ Circle.prototype.draw = function() {
 // pintar todo
 
 var water = new Water();
-var gun = new Gun();
+var gun = new Gun(canvas);
 var plant = new Plant(470, 300, 30, '#00FF00');
 var plant1 = new Plant(400, 200, 30, '#00FF00');
+var plant2 = new Plant(250, 400, 20, '#00FF00');
 var circle = new Circle();
 var clickInsideCircle = 0;
 $("#vidas").text(vidas);
 
-// pintar nivel 0
-
 function drawAll() {
-  water.draw();
-  gun.draw();
-  plant.draw();
-  circle.draw();
-  $("#clean").hide();
+  switch (nivel) {
+    case 0:
+      water.draw();
+      gun.draw();
+      plant.draw();
+      circle.draw();
+      $("#clean").hide();
+      break;
+    case 1:
+      water.draw();
+      gun.draw();
+      plant1.draw();
+      circle.draw();
+      $("#clean").hide();
+      break;
+    case 2:
+      water.draw();
+      gun.draw();
+      plant2.draw();
+      circle.draw();
+      $("#clean").hide();
+      break;
+    case 3:
+      $(".game-over").hide();
+      $("#clean").show();
+      $("#vidas").text("0");
+      alert("¡Has ganado!");
+  }
+
 }
 
 drawAll();
 
-// pintar nivel 1
-
-function drawLevel1() {
-  water.draw();
-  gun.draw();
-  plant1.draw();
-  circle.draw();
-  $("#clean").hide();
-}
-
-// volver a empezar
+//volver a empezar
 
 function restart() {
   water.x = 50; // parece un poco cutre con los números introducidos tal cual
   water.y = 450;
   water.vx = 2;
   water.vy = 2;
-  vidas = 3; // alguna forma de hacer restart sin volver a meter el número?
+  vidas = 4; // alguna forma de hacer restart sin volver a meter el número?
+  nivel = 0;
   $("#vidas").text(vidas);
+  $("#nivel").text(nivel);
   var gravity = 0.004;
   ctx.clearRect(0,0, canvas.width, canvas.height);
-  drawAll();
+  shootAgain();
 }
 
-// disparar de nuevo
+//disparar de nuevo
 
 function shootAgain() {
-  water.x = 50;
-  water.y = 450;
-  water.vx = 2;
-  water.vy = 2;
-  ctx.clearRect(0,0, canvas.width, canvas.height);
-  drawAll();
-}
-
-function shootAgainLevel1() {
-  water.x = 50;
-  water.y = 450;
-  water.vx = 2;
-  water.vy = 2;
-  ctx.clearRect(0,0, canvas.width, canvas.height);
-  drawLevel1();
+      $("#nivel").text(nivel);
+      water.x = 50;
+      water.y = 450;
+      water.vx = 2;
+      water.vy = 2;
+      ctx.clearRect(0,0, canvas.width, canvas.height);
+      drawAll();
 }
 
 //check si click para disparo está dentro del círculo
@@ -169,14 +173,14 @@ function checkClick(circleX, circleY, radius, radiusIn, mouseX, mouseY) {
 }
 
 
-// restart button
+//restart button
 
 document.getElementById("clean").onclick = function(){
   $(".game-over").show();
   restart();
 };
 
-// click en círculo para apuntar
+//click en círculo para apuntar
 
 function getMousePos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
@@ -193,11 +197,28 @@ function getMousePos(canvas, evt) {
     if (clickInsideCircle == true) {
       water.vx = (mousePos.x - water.x) * 0.05;
       water.vy = (water.y - mousePos.y) * 0.05;
-        
-      intervalHandle = setInterval(function() {
-        water.update();
-        hitPlant(water.x, water.y, water.radius, plant.x, plant.y, plant.h);
-      }, 2);
+      switch (nivel){
+        case 0:
+          intervalHandle = setInterval(function() {
+            water.update();
+            hitPlant(water.x, water.y, water.radius, plant.x, plant.y, plant.h);
+          }, 2);
+          break;
+        case 1:
+          intervalHandle = setInterval(function() {
+            water.update();
+            hitPlant(water.x, water.y, water.radius, plant1.x, plant1.y, plant.h);
+          }, 2);
+          break;
+        case 2:
+          intervalHandle = setInterval(function() {
+            water.update();
+            hitPlant(water.x, water.y, water.radius, plant2.x, plant2.y, plant.h);
+          }, 2);
+          break;
+        default:
+          break;
+      }
     } else {
       alert("Debes hacer click dentro del arco gris");
     }
@@ -208,9 +229,8 @@ function getMousePos(canvas, evt) {
     if (Math.floor(waterX) >= Math.floor(plantX) && Math.floor(waterX) <= Math.floor(plantX + plantH) && Math.floor(waterY) >= Math.floor(plantY) && Math.floor(waterY) <= Math.floor(plantY + plantH)){
       alert("hit!");
       nivel += 1;
-      shootAgainLevel1();
+      shootAgain();
       clearInterval(intervalHandle);
-
     } else if ((waterX >= canvas.width) || (waterY >= canvas.height) || (waterX<=0) || (waterY <= 0)) {
       vidas -= 1;
       clearInterval(intervalHandle);

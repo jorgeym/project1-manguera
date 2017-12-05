@@ -1,26 +1,43 @@
 <!DOCTYPE html>
 <html>
     <head>
-       <title>Regadera Gun</title>
+       <title>Manguera Game</title>
        <meta charset="utf-8">
        <meta name="viewport" content="width=device-width">
        <link type="text/css" rel="stylesheet" href="styles.css" media="screen">
     </head>
     <body>
       <div>
-        <h1>Regadera Gun</h1>
+        <h1>Manguera Game</h1>
         <button id="clean">Empezar de nuevo</button>
         <h2 class="game-over">Nivel <span id="nivel">0</span></h2>
+        <div class="game-over">
+          <h3>Instrucciones</h3>
+          <ul>
+            <li>Riega las plantas que aparecen en la pantalla</li>
+            <li>Para regar, haz 'click' en el arco de color gris</li>
+            <li>Tienes 4 vidas</li>
+            <li>Hay 3 niveles diferentes</li>
+          </ul>
+          <h3> Te quedan <span id="vidas">0</span> vidas </h3>
+        </div>
       </div>
 
-      <canvas class="game-over" id="canvas" width="500px" height="500px">      </canvas>
+      <div>
+        <canvas class="game-over" id="canvas" width="500px" height="500px">      </canvas>
+      </div>
 
       <div class="game-over">
-        <p>You have <span id="vidas">0</span> lives left</p>
+
       </div>
 
         <script src="jquery-2.1.4.js"></script>
-        <script type="text/javascript" src="regadera.js"></script>
-
+        <script type="text/javascript" src="lib/gun.js"></script>
+        <script type="text/javascript" src="lib/water.js"></script>
+        <script type="text/javascript" src="lib/plant.js"></script>
+        <script type="text/javascript" src="lib/circle.js"></script>
+        <script type="text/javascript" src="lib/game.js"></script>
+        <script type="text/javascript" src="lib/index.js"></script>
+        <!-- <script type="text/javascript" src="regadera.js"></script> -->
     </body>
 </html>
