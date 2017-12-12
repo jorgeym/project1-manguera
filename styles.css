@@ -6,3 +6,11 @@ body {
   display: flex;
   justify-content: space-between;
 }
+
+.instructions {
+  color: grey;
+}
+
+.blue-text {
+  color: blue;
+}
